@@ -102,7 +102,7 @@ def minibatch_parse(sentences, model, batch_size):
         dependencies.append(parsed.dependencies)
 
     ### END YOUR CODE
-    # OLD ONE WOULDN"T WORK WHEN MINIBATCHES WEHREN"T A NICE MULTIPLE I GUESS OH FUCKING WELL 
+    # OLD ONE WOULDN"T WORK WHEN MINIBATCHES WEHREN"T A NICE MULTIPLE I GUESS OH FUCKING WELL
 
     return dependencies
 

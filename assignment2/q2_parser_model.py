@@ -22,8 +22,9 @@ class Config(object):
     embed_size = 50
     hidden_size = 200
     batch_size = 2048
-    n_epochs = 10
+    n_epochs = 20
     lr = 0.001
+    l2 = 0.01
 
 
 class ParserModel(Model):
@@ -149,17 +150,24 @@ class ParserModel(Model):
 
         x = self.add_embedding()
         ### YOUR CODE HERE
-        W = tf.Variable(initializer((self.config.n_features * self.config.embed_size, self.config.hidden_size)))
-        U = tf.Variable(initializer((self.config.hidden_size, self.config.n_classes)))
+        W = tf.Variable(initializer((self.config.n_features * self.config.embed_size, self.config.hidden_size)), name="W")
+        U = tf.Variable(initializer((self.config.hidden_size, self.config.n_classes)), name="U")
+        U2 = tf.Variable(initializer((self.config.hidden_size, self.config.hidden_size)), name="U2")
 
         b1 = tf.Variable(tf.zeros(shape= [self.config.hidden_size,]), dtype=tf.float32)
         b2 = tf.Variable(tf.zeros(shape= [self.config.n_classes,]), dtype=tf.float32)
+        b3 = tf.Variable(tf.zeros(shape= [self.config.hidden_size,]), dtype=tf.float32)
 
         z = tf.matmul(x,W) + b1
         h = tf.nn.relu(z)
         h_drop = tf.nn.dropout(h, keep_prob=self.config.dropout)
+        print h_drop
 
-        pred = tf.matmul(h_drop, U) + b2
+        z2 = tf.matmul(h_drop, U2) + b3
+        h2 = tf.nn.relu(z2)
+        h_drop2 = tf.nn.dropout(h2, keep_prob=self.config.dropout)
+
+        pred = tf.matmul(h_drop2, U) + b2
         ### END YOUR CODE
         return pred
 
@@ -179,7 +187,9 @@ class ParserModel(Model):
         ### YOUR CODE HERE
         #softmax = tf.nn.softmax(pred)
 
-        loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.labels_placeholder, logits=pred), axis=None)
+        loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.labels_placeholder, logits=pred), axis=None)\
+               # + self.config.l2 * (tf.nn.l2_loss(tf.get_default_graph().get_tensor_by_name('W:0')) +
+               #                     tf.nn.l2_loss(tf.get_default_graph().get_tensor_by_name('U:0')))
         ### END YOUR CODE
         return loss
 
